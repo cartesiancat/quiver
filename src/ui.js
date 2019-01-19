@@ -232,6 +232,22 @@ class Quiver {
     }
 }
 
+let oauthToken;
+function github(path, method, data) {
+    method = method || "GET";
+    let headers = {"Accept": "application/vnd.github.v3+json"};
+    if(oauthToken) {
+        headers["Authorization"] = "token " + oauthToken;
+    }
+    return fetch("https://api.github.com"+path, {
+        method: method,
+        cache: "no-cache",
+        headers: headers,
+        body: data,
+    })
+    .then(response => response.json());
+}
+
 /// Various methods of exporting a quiver.
 class QuiverExport {
     /// A method to export a quiver as a string.
@@ -2455,6 +2471,16 @@ class Panel {
 
         this.element.appendChild(
             new DOM.Element("div", { class: "bottom" }).add(
+                // The save to gist button
+                new DOM.Element("button", { class: "global" }).add("Save to gist")
+                    .listen("click", () =>
+                        github("/gists/eb0b3850e4364782fe3ed0426b858b13") .then(response => {
+                                content = response.files[Object.keys(response.files)[0]].content;
+                                console.log(content);
+                                QuiverImportExport.base64.import(ui, content);
+                            })
+                        )
+            ).add(
                 // The shareable link button.
                 new DOM.Element("button", { class: "global" }).add("Get shareable link")
                     .listen("click", () => display_export_pane("base64"))
