@@ -2471,15 +2471,37 @@ class Panel {
 
         this.element.appendChild(
             new DOM.Element("div", { class: "bottom" }).add(
-                // The save to gist button
-                new DOM.Element("button", { class: "global" }).add("Save to gist")
-                    .listen("click", () =>
-                        github("/gists/eb0b3850e4364782fe3ed0426b858b13") .then(response => {
+                // The the github login button
+                new DOM.Element("button", { class: "global" }).add("Login to github")
+                    .listen("click", () => {
+                        let userLoginWindow = window.open(
+                            "https://github.com/login/oauth/authorize?scope=gist"
+                                + "&state=" + "totallyrandomstatemate"
+                                + "&client_id=" + "0c37d986d04a87e2045b"
+                                + "&redirect_url=" + encodeURI(window.location.href) + "/oauth.html",
+                                // redirect only works with localhost:8002 at the moment
+                            "Sign in with Github",
+                            "left="+(window.left+50)
+                                +",top="+(window.top+50)
+                                +",width=1050,height=630,personalbar=0,toolbar=0,scrollbars=1,"
+                                +"resizable=1");
+                        if (userLoginWindow) {
+                            userLoginWindow.focus();
+                        }
+                    })
+            ).add(
+                // The load from gist button
+                new DOM.Element("button", { class: "global" }).add("Load from gist")
+                    .listen("click", () => {
+                        let url_or_id = prompt("URL or ID of gist:", "eb0b3850e4364782fe3ed0426b858b13");
+                        let gist_id = url_or_id.substring(url_or_id.lastIndexOf("/") + 1)
+                        console.log(gist_id)
+                        github("/gists/" + gist_id) .then(response => {
                                 content = response.files[Object.keys(response.files)[0]].content;
                                 console.log(content);
                                 QuiverImportExport.base64.import(ui, content);
                             })
-                        )
+                        })
             ).add(
                 // The shareable link button.
                 new DOM.Element("button", { class: "global" }).add("Get shareable link")
